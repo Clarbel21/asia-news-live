@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Asia News Live · Singapore · Hong Kong · Indonesia</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --bg-soft: #101a2c;
+    --card: #111b2e;
+    --card-border: #1e2a44;
+    --blue: #4d8dff;           /* UI accent */
+    --blue-strong: #2f6bff;
+    --blue-soft: #9dc0ff;
+    --pink: #ff7bac;           /* API-result text (assignment requirement) */
+    --pink-soft: #ffb3cd;
+    --text: #f4f7fc;
+    --text-dim: #8ca0bf;
+    --text-faint: #5f7089;
+    --mono: "SF Mono", "Cascadia Code", Consolas, monospace;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: radial-gradient(1100px 520px at 85% -10%, #14233f 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, "Microsoft JhengHei", "Microsoft YaHei", Helvetica, Arial, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 64px;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- header ---------- */
+  header { padding: 44px 0 6px; }
+  .live-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--blue);
+    box-shadow: 0 0 0 0 rgba(77,141,255,.6);
+    animation: pulse 1.8s infinite;
+  }
+  @keyframes pulse {
+    70% { box-shadow: 0 0 0 9px rgba(77,141,255,0); }
+    100% { box-shadow: 0 0 0 0 rgba(77,141,255,0); }
+  }
+  .live-label { color: var(--text-dim); font-weight: 600; letter-spacing: 2.5px; font-size: 12px; text-transform: uppercase; }
+  h1 { font-size: clamp(28px, 4.5vw, 44px); font-weight: 800; letter-spacing: -0.5px; line-height: 1.15; }
+  h1 .accent { color: var(--blue); }
+  .subtitle { color: var(--text-dim); margin-top: 10px; font-size: 15px; line-height: 1.65; max-width: 760px; }
+  .subtitle b { color: var(--text); font-weight: 600; }
+  .legend {
+    display: inline-flex; align-items: center; gap: 8px; margin-top: 14px;
+    border: 1px solid var(--card-border); background: var(--bg-soft);
+    border-radius: 8px; padding: 6px 12px; font-size: 12.5px; color: var(--text-dim);
+  }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 3px; background: var(--pink); }
+  .legend b { color: var(--pink); font-weight: 600; }
+
+  /* ---------- region switcher ---------- */
+  .region-tabs {
+    display: inline-flex; gap: 4px; margin-top: 18px; padding: 4px;
+    background: var(--bg-soft); border: 1px solid var(--card-border); border-radius: 11px;
+  }
+  .region-tabs button {
+    background: transparent; color: var(--text-dim); border: none; border-radius: 8px;
+    padding: 8px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 7px;
+    transition: background .15s ease, color .15s ease;
+  }
+  .region-tabs button:hover { color: var(--text); background: rgba(77,141,255,.08); }
+  .region-tabs button.active {
+    background: linear-gradient(135deg, var(--blue-strong), var(--blue));
+    color: #fff; box-shadow: 0 2px 8px rgba(47,107,255,.35);
+  }
+
+  /* ---------- stats bar ---------- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 26px 0 8px; }
+  .stat {
+    background: var(--card); border: 1px solid var(--card-border);
+    border-radius: 12px; padding: 15px 17px;
+  }
+  .stat .num { color: var(--pink); font-size: 23px; font-weight: 800; font-family: var(--mono); }
+  .stat .lbl { color: var(--text-faint); font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; margin-top: 5px; font-weight: 600; }
+
+  /* ---------- controls: refresh + search ---------- */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 20px 0 12px; }
+  button.primary-btn {
+    background: linear-gradient(135deg, var(--blue-strong), var(--blue));
+    color: #fff; border: none; border-radius: 9px;
+    padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+    box-shadow: 0 2px 10px rgba(47,107,255,.3);
+    transition: transform .15s ease, box-shadow .15s ease;
+  }
+  button.primary-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(47,107,255,.42); }
+  button.ghost-btn {
+    background: transparent; color: var(--blue-soft); border: 1px solid #2a3a5c;
+    border-radius: 9px; padding: 10px 20px; font-size: 14px; font-weight: 600; cursor: pointer;
+    transition: background .15s ease, border-color .15s ease;
+  }
+  button.ghost-btn:hover { background: rgba(77,141,255,.1); border-color: var(--blue); }
+  .search-box { flex: 1; min-width: 220px; position: relative; }
+  .search-box input {
+    width: 100%; background: var(--bg-soft); border: 1px solid #2a3a5c; color: var(--text);
+    border-radius: 9px; padding: 10px 14px 10px 36px; font-size: 14px; outline: none;
+    transition: border-color .15s ease;
+    font-family: inherit;
+  }
+  .search-box input:focus { border-color: var(--blue); }
+  .search-box input::placeholder { color: var(--text-faint); }
+  .search-box .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-faint); font-size: 14px; }
+  .status-msg { color: var(--text-dim); font-size: 13px; font-family: var(--mono); flex-basis: 100%; }
+
+  /* ---------- category chips ---------- */
+  .cat-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 18px; }
+  .cat-chip {
+    background: var(--bg-soft); border: 1px solid var(--card-border); color: var(--text-dim);
+    border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: border-color .15s ease, color .15s ease, background .15s ease;
+  }
+  .cat-chip:hover { color: var(--text); border-color: #2a3a5c; }
+  .cat-chip.active { background: rgba(77,141,255,.14); border-color: var(--blue); color: var(--blue-soft); }
+  .cat-chip .count { font-family: var(--mono); font-size: 11px; color: var(--pink); }
+
+  /* ---------- API request strip ---------- */
+  .request-box {
+    background: var(--bg-soft); border: 1px solid var(--card-border);
+    border-radius: 10px; padding: 13px 16px; margin-bottom: 26px;
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.7; overflow-x: auto;
+    display: flex; gap: 12px; align-items: baseline;
+  }
+  .request-box .method {
+    color: #fff; background: var(--blue-strong); border-radius: 5px;
+    padding: 2px 8px; font-size: 11px; font-weight: 700; letter-spacing: 1px; flex-shrink: 0;
+  }
+  .request-box .url { color: var(--text-dim); word-break: break-all; }
+  .request-box .note { flex-basis: 100%; color: var(--text-faint); font-size: 11.5px; }
+
+  /* ---------- news grid ---------- */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border); border-radius: 12px;
+    padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 12px;
+    transition: transform .16s ease, border-color .16s ease, box-shadow .16s ease;
+    animation: rise .45s ease both;
+  }
+  @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+  .card:hover {
+    transform: translateY(-3px);
+    border-color: #2f4a7a;
+    box-shadow: 0 10px 28px rgba(10,18,35,.55);
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .meta-left { display: inline-flex; gap: 6px; min-width: 0; align-items: center; }
+  .source-chip {
+    color: var(--blue-soft); background: rgba(77,141,255,.09);
+    border: 1px solid rgba(77,141,255,.22);
+    border-radius: 6px; padding: 3px 10px; font-size: 11.5px; font-weight: 600;
+    letter-spacing: .3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;
+  }
+  .cat-badge {
+    font-size: 11px; font-weight: 600; border-radius: 6px; padding: 3px 8px; white-space: nowrap;
+    color: var(--pink); background: rgba(255,123,172,.1); border: 1px solid rgba(255,123,172,.25);
+  }
+  .rank { color: var(--text-faint); font-family: var(--mono); font-size: 11.5px; margin-left: auto; }
+  .headline {
+    color: var(--pink);                /* ★ API result shown in PINK text */
+    font-size: 16px; font-weight: 700; line-height: 1.5; letter-spacing: .1px;
+    text-decoration: none; flex: 1;
+  }
+  .headline:hover { text-decoration: underline; color: var(--pink-soft); }
+  .card-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .time { color: var(--text-faint); font-size: 12px; }
+  .read-link { color: var(--blue); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+  .read-link:hover { text-decoration: underline; }
+
+  /* ---------- category breakdown chart ---------- */
+  .chart-panel {
+    background: var(--bg-soft); border: 1px solid var(--card-border); border-radius: 12px;
+    padding: 20px 22px; margin: 26px 0 0;
+  }
+  .chart-panel h3 { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .chart-panel .sub { font-size: 12.5px; color: var(--text-faint); margin-bottom: 16px; }
+  .bar-row { display: grid; grid-template-columns: 150px 1fr 40px; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .bar-row .lbl { font-size: 12.5px; color: var(--text-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bar-row .track { display: block; background: rgba(255,255,255,.05); border-radius: 5px; height: 14px; overflow: hidden; }
+  .bar-row .fill { display: block; height: 100%; background: linear-gradient(90deg, #d95c8c, var(--pink)); border-radius: 5px; min-width: 2px; }
+  .bar-row .val { font-family: var(--mono); font-size: 12px; color: var(--pink); text-align: right; }
+
+  /* ---------- raw JSON viewer ---------- */
+  details.json-box {
+    margin-top: 26px; background: var(--bg-soft);
+    border: 1px solid var(--card-border); border-radius: 12px; overflow: hidden;
+  }
+  details.json-box summary {
+    cursor: pointer; padding: 15px 20px; color: var(--text);
+    font-weight: 600; font-size: 14.5px; list-style: none;
+    display: flex; align-items: center; gap: 10px; user-select: none;
+  }
+  details.json-box summary::-webkit-details-marker { display: none; }
+  details.json-box summary::before { content: "▸"; transition: transform .2s; color: var(--blue); }
+  details.json-box[open] summary::before { transform: rotate(90deg); }
+  details.json-box summary .tag {
+    margin-left: auto; color: var(--pink); font-family: var(--mono); font-size: 11.5px;
+    background: rgba(255,123,172,.09); border: 1px solid rgba(255,123,172,.25);
+    border-radius: 5px; padding: 2px 8px;
+  }
+  pre#json-view {
+    margin: 0; padding: 4px 20px 20px; overflow-x: auto;
+    color: var(--pink-soft); font-family: var(--mono); font-size: 12px; line-height: 1.65;
+  }
+  .json-note { padding: 0 20px 16px; color: var(--text-faint); font-size: 12.5px; }
+
+  /* ---------- footer ---------- */
+  footer { margin-top: 42px; color: var(--text-faint); font-size: 13px; line-height: 1.9; }
+  footer .flow { color: var(--blue-soft); font-family: var(--mono); font-size: 12px; }
+
+  /* ---------- loading / error ---------- */
+  .loading { text-align: center; padding: 70px 0; color: var(--text-dim); font-size: 15px; }
+  .spinner {
+    width: 38px; height: 38px; margin: 0 auto 16px;
+    border: 3px solid rgba(77,141,255,.18); border-top-color: var(--blue);
+    border-radius: 50%; animation: spin .8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box {
+    background: rgba(77,141,255,.06); border: 1px solid #2a3a5c;
+    border-radius: 12px; padding: 22px; text-align: center; color: var(--text-dim);
+  }
+  .no-results { text-align: center; padding: 40px 0; color: var(--text-faint); font-size: 14px; grid-column: 1/-1; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="live-row"><span class="live-dot"></span><span class="live-label" id="edition-label">Live · Singapore Edition · English</span></div>
+    <h1>Asia News <span class="accent">Live</span></h1>
+    <p class="subtitle">
+      Top stories from Singapore, Hong Kong and Indonesia, fetched from a <b>free public API</b> (no key, no signup)
+      and <b>automatically categorized</b> — informative, opinion/analysis, business, sports, entertainment, tech/science.
+    </p>
+    <div class="legend"><span class="swatch"></span>Legend: <b>pink text</b> = live data returned by the API</div>
+    <div class="region-tabs" role="tablist">
+      <button id="tab-sg" onclick="setRegion('sg')">🇸🇬 Singapore</button>
+      <button id="tab-hk" onclick="setRegion('hk')">🇭🇰 Hong Kong</button>
+      <button id="tab-id" onclick="setRegion('id')">🇮🇩 Indonesia</button>
+    </div>
+  </header>
+
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-count">–</div><div class="lbl">Articles fetched</div></div>
+    <div class="stat"><div class="num" id="stat-sources">–</div><div class="lbl">News sources</div></div>
+    <div class="stat"><div class="num" id="stat-latest">–</div><div class="lbl">Newest story</div></div>
+    <div class="stat"><div class="num" id="stat-time">–</div><div class="lbl">Fetched at (local)</div></div>
+  </div>
+
+  <div class="toolbar">
+    <button class="primary-btn" onclick="loadNews()">↻ Refresh news</button>
+    <button class="ghost-btn" onclick="downloadJson()">⬇ Download full JSON</button>
+    <div class="search-box">
+      <span class="icon">🔍</span>
+      <input type="text" id="search-input" placeholder="Search headlines… (e.g. haze, 股市, ekonomi)" oninput="setQuery(this.value)">
+    </div>
+    <span class="status-msg" id="status-msg">Ready.</span>
+  </div>
+
+  <div class="cat-chips" id="cat-chips"></div>
+
+  <div class="request-box">
+    <span class="method">GET</span>
+    <span class="url" id="api-url-display"></span>
+    <span class="note">Feed bundle per region: top stories + business · sports · technology · entertainment topic feeds — fetched in parallel, deduplicated and merged into one result.</span>
+  </div>
+
+  <div class="grid" id="news-grid"></div>
+
+  <div class="chart-panel" id="chart-panel">
+    <h3>Category breakdown — <span id="chart-region">–</span></h3>
+    <div class="sub">Auto-classified from headline keywords (English · 繁體中文 · Bahasa Indonesia)</div>
+    <div id="chart-rows"></div>
+  </div>
+
+  <details class="json-box">
+    <summary>View raw JSON response <span class="tag">API data · pink</span></summary>
+    <pre id="json-view">Loading…</pre>
+    <p class="json-note">Shown above: the actual JSON returned by the API (first 3 items of <span id="json-total">–</span> truncated for readability — use “Download full JSON” for everything).</p>
+  </details>
+
+  <footer>
+    <p class="flow">Pipeline: Google News RSS (SG · HK · ID editions) → rss2json free API → in-browser categorization → this dashboard</p>
+    <p>Task B demo — free API calling with a visual frontend. Data: Google News top stories, converted to JSON by rss2json.com (free tier, no API key). Categories are rule-based (keyword classifier) and run entirely client-side.</p>
+  </footer>
+</div>
+
+<script>
+  // ============================================================
+  // API config (100% free, no key)
+  // Each region is a Google News RSS local edition, converted to
+  // JSON by rss2json's free tier.
+  // ============================================================
+  const REGIONS = {
+    sg: { name: "Singapore", lang: "English",          rss: "https://news.google.com/rss?hl=en-SG&gl=SG&ceid=SG:en" },
+    hk: { name: "Hong Kong", lang: "繁體中文",         rss: "https://news.google.com/rss?hl=zh-HK&gl=HK&ceid=HK:zh-Hant" },
+    id: { name: "Indonesia", lang: "Bahasa Indonesia", rss: "https://news.google.com/rss?hl=id&gl=ID&ceid=ID:id" },
+  };
+  const cache = {};                                 // per-region API responses (in memory)
+  let region = localStorage.getItem("anl-region");
+  if (!REGIONS[region]) region = "sg";
+
+  const apiUrl = () =>
+    "https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(REGIONS[region].rss);
+
+  let lastResponse = null;      // full JSON for the current region
+  let activeCat = "all";        // category filter
+  let query = "";               // search query
+
+  // ============================================================
+  // Resilient fetching: primary JSON API + raw-RSS proxy fallbacks.
+  // The free tiers throttle per IP, so we try providers in order
+  // and keep the last successful response per region in localStorage.
+  // ============================================================
+  const STORE_PREFIX = "anl-cache-v2-";   // v2 = merged 5-feed bundles (v1 caches are stale single-feed copies)
+
+  // drop stale pre-bundle caches so regions never resurrect old 10-article data
+  for (let i = localStorage.length - 1; i >= 0; i--) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("anl-cache-") && !k.startsWith(STORE_PREFIX)) localStorage.removeItem(k);
+  }
+
+  async function fetchWithTimeout(url, ms = 8000) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), ms);
+    try { return await fetch(url, { signal: ctrl.signal }); }
+    finally { clearTimeout(timer); }
+  }
+
+  function toIsoStyle(dateStr) {
+    // normalize any parseable date (e.g. RFC822 from raw RSS) to rss2json's "YYYY-MM-DD HH:mm:ss" (UTC)
+    const t = new Date(dateStr);
+    if (isNaN(t)) return dateStr;
+    return t.toISOString().slice(0, 19).replace("T", " ");
+  }
+
+  async function fetchViaRss2Json(rssUrl) {
+    const res = await fetchWithTimeout("https://api.rss2json.com/v1/api.json?rss_url=" + encodeURIComponent(rssUrl));
+    const data = await res.json();
+    if (data.status !== "ok" || !data.items || !data.items.length)
+      throw new Error(data.message || "rss2json returned no items");
+    return data;
+  }
+
+  async function fetchViaXmlProxy(rssUrl, proxyBase, proxyName) {
+    const res = await fetchWithTimeout(proxyBase + encodeURIComponent(rssUrl));
+    if (!res.ok) throw new Error(proxyName + " HTTP " + res.status);
+    const xml = new DOMParser().parseFromString(await res.text(), "text/xml");
+    if (xml.querySelector("parsererror")) throw new Error(proxyName + ": XML parse error");
+    const items = [...xml.querySelectorAll("item")].slice(0, 25).map(it => ({
+      title:   it.querySelector("title")?.textContent || "",
+      pubDate: toIsoStyle(it.querySelector("pubDate")?.textContent || ""),
+      link:    it.querySelector("link")?.textContent || "",
+      guid:    it.querySelector("guid")?.textContent || "",
+      description: it.querySelector("description")?.textContent || "",
+    }));
+    if (!items.length) throw new Error(proxyName + ": feed had no items");
+    return { status: "ok", feed: { title: xml.querySelector("channel > title")?.textContent || "RSS", url: rssUrl }, items };
+  }
+
+  const PROVIDERS = [
+    { name: "rss2json",    fetch: u => fetchViaRss2Json(u) },
+    { name: "allorigins",  fetch: u => fetchViaXmlProxy(u, "https://api.allorigins.win/raw?url=", "allorigins") },
+    { name: "corsproxy",   fetch: u => fetchViaXmlProxy(u, "https://corsproxy.io/?url=", "corsproxy") },
+    { name: "codetabs",    fetch: u => fetchViaXmlProxy(u, "https://api.codetabs.com/v1/proxy/?quest=", "codetabs") },
+  ];
+
+  // rss2json's free (no-key) tier returns max 10 items per feed, so each region
+  // aggregates a bundle: top stories + 4 topic feeds, deduplicated and merged.
+  const TOPIC_FEEDS = ["BUSINESS", "SPORTS", "TECHNOLOGY", "ENTERTAINMENT"];
+  function regionFeeds(key) {
+    const params = REGIONS[key].rss.split("?")[1]; // hl=..&gl=..&ceid=..
+    return [
+      REGIONS[key].rss,
+      ...TOPIC_FEEDS.map(t => `https://news.google.com/rss/headlines/section/topic/${t}?${params}`),
+    ];
+  }
+
+  async function fetchFeedViaProviders(rssUrl) {
+    let lastErr;
+    for (const prov of PROVIDERS) {
+      try { return { data: await prov.fetch(rssUrl), provider: prov.name }; }
+      catch (e) { lastErr = e; console.warn(`[news provider ${prov.name}]`, e); }
+    }
+    throw lastErr || new Error("all providers failed");
+  }
+
+  const parseTime = (d) => {
+    if (!d) return 0;
+    const t = new Date(d.includes("T") ? d : d.replace(" ", "T") + "Z");
+    return isNaN(t) ? 0 : t.getTime();
+  };
+
+  async function fetchMergedRegion(key) {
+    const feeds = regionFeeds(key);
+    // Probe with the top-stories feed to find one healthy provider, then pull
+    // the topic feeds through that provider only — a 404 topic feed then fails
+    // in ~1s instead of crawling through every (possibly dead) fallback proxy.
+    let winner = null, topData = null, lastErr = null;
+    for (const prov of PROVIDERS) {
+      try { topData = await prov.fetch(feeds[0]); winner = prov; break; }
+      catch (e) { lastErr = e; console.warn(`[news provider ${prov.name}]`, e); }
+    }
+    if (!winner) throw lastErr || new Error("all providers failed");
+
+    const settled = await Promise.allSettled(feeds.slice(1).map(u => winner.fetch(u)));
+    const okDatas = [topData, ...settled.filter(s => s.status === "fulfilled").map(s => s.value)];
+
+    const seen = new Set();
+    const items = [];
+    for (const data of okDatas) {
+      for (const it of data.items) {
+        const dedupeKey = (it.guid || it.title).toLowerCase().replace(/\s+/g, " ").slice(0, 120);
+        if (seen.has(dedupeKey)) continue;
+        seen.add(dedupeKey);
+        items.push(it);
+      }
+    }
+    items.sort((a, b) => parseTime(b.pubDate) - parseTime(a.pubDate));
+    return {
+      data: { status: "ok", feed: { title: `Google News - ${REGIONS[key].name} (merged bundle)`, url: REGIONS[key].rss }, items: items.slice(0, 30) },
+      feedsOk: okDatas.length, feedsTotal: feeds.length, providersUsed: winner.name,
+    };
+  }
+
+  function storeRegion(key, data) {
+    try { localStorage.setItem(STORE_PREFIX + key, JSON.stringify({ t: Date.now(), data })); } catch (e) { /* quota — ignore */ }
+  }
+  function loadStoredRegion(key) {
+    try {
+      const raw = localStorage.getItem(STORE_PREFIX + key);
+      if (!raw) return null;
+      const { t, data } = JSON.parse(raw);
+      return (data && data.items && data.items.length) ? { t, data } : null;
+    } catch (e) { return null; }
+  }
+
+  function syncChrome() {
+    const r = REGIONS[region];
+    document.querySelectorAll(".region-tabs button").forEach(b =>
+      b.classList.toggle("active", b.id === "tab-" + region));
+    document.getElementById("edition-label").textContent = `Live · ${r.name} Edition · ${r.lang}`;
+    document.getElementById("api-url-display").textContent = apiUrl();
+    document.getElementById("chart-region").textContent = r.name;
+    document.title = `Asia News Live · ${r.name}`;
+  }
+
+  function setRegion(key) {
+    if (!REGIONS[key] || key === region) return;
+    region = key;
+    localStorage.setItem("anl-region", key);
+    syncChrome();
+    const st = document.getElementById("status-msg");
+    if (cache[key]) {
+      render(cache[key]);
+      st.dataset.base = "📦 Loaded from cache — press ↻ Refresh for the latest.";
+      st.textContent = st.dataset.base;
+    } else {
+      const stored = loadStoredRegion(key);
+      if (stored) {
+        cache[key] = stored.data;
+        render(stored.data);
+        st.dataset.base = `📦 Showing cached articles from ${new Date(stored.t).toLocaleTimeString()} — press ↻ Refresh for the latest.`;
+        st.textContent = st.dataset.base;
+      } else {
+        loadNews();
+      }
+    }
+  }
+
+  // ============================================================
+  // News categorizer — rule-based keyword classifier,
+  // multilingual (English / 繁體中文 / Bahasa Indonesia).
+  // Runs entirely client-side; default category is "informative".
+  // ============================================================
+  const CATEGORIES = [
+    { key: "opinion", label: "Opinion / Analysis", icon: "💬", keywords: [
+      "opinion", "op-ed", "editorial", "columnist", "commentary", "analysis", "analysing", "perspective", "viewpoint", "why we", "what to make of",
+      "opini", "analisis", "kolom", "sudut pandang",
+      "評論", "社論", "觀點", "專欄", "分析", "時評", "筆陣", "社評" ] },
+    { key: "business", label: "Business", icon: "💼", keywords: [
+      "business", "economy", "economic", "market", "markets", "stocks", "shares", "ipo", "gdp", "inflation", "interest rate", "trade", "tariff", "bank", "banks", "finance", "financial", "ringgit", "rupiah", "property", "real estate", "layoffs", "startup", "funding",
+      "ekonomi", "saham", "pasar", "ihsg", "fiskal", "anggaran", "investasi", "bank", "obligasi", "pajak", "ekspor", "impor",
+      "經濟", "金融", "股市", "港股", "樓市", "地產", "銀行", "財經", "美元", "樓價", "通脹", "關稅", "貿易", "ipo" ] },
+    { key: "sports", label: "Sports", icon: "⚽", keywords: [
+      "sport", "sports", "football", "soccer", "badminton", "f1", "formula 1", "olympic", "olympics", "asian games", "league", "tennis", "golf", "nba", "boxing", "muay thai", "swimming", "medal", "tournament",
+      "bola", "bulu tangkis", "timnas", "liga", "olahraga", "piala", "sea games", "atlet",
+      "足球", "羽毛球", "奧運", "亞運", "聯賽", "球員", "體育", "拳擊", "游泳", "桌球", "賽馬", "獎牌" ] },
+    { key: "entertainment", label: "Entertainment", icon: "🎬", keywords: [
+      "celebrity", "actor", "actress", "singer", "movie", "movies", "film", "film review", "drama", "concert", "k-pop", "pop star", "tv show", "netflix", "idol", "miss universe", "pageant", "comedian", "box office", "trailer",
+      "artis", "penyanyi", "aktor", "aktris", "film", "konser", "drama", "sinetron", "idola", "musik",
+      "明星", "藝人", "演員", "歌手", "電影", "演唱會", "劇集", "綜藝", "偶像", "選美", "票房" ] },
+    { key: "tech", label: "Tech / Science", icon: "🔬", keywords: [
+      "tech", "technology", "ai", "artificial intelligence", "chatbot", "chatgpt", "cyber", "nasa", "satellite", "chip", "semiconductor", "data breach", "hack", "scam", "smartphone", "vaccine", "outbreak",
+      "teknologi", "kecerdasan buatan", "siber", "digital", "angkasa", "riset", "vaksin",
+      "科技", "人工智能", "網絡", "黑客", "太空", "晶片", "數碼", "疫苗", "疫症", "詐騙" ] },
+  ];
+  const CAT_BY_KEY = { all: { key: "all", label: "All", icon: "🗞️" }, informative: { key: "informative", label: "Informative", icon: "📰" }, ...Object.fromEntries(CATEGORIES.map(c => [c.key, c])) };
+
+  function keywordHits(text, keywords) {
+    const lower = text.toLowerCase();
+    let hits = 0;
+    for (const k of keywords) {
+      if (/[\u4e00-\u9fff]/.test(k)) { hits += lower.includes(k) ? 1 : 0; }
+      else {
+        const re = new RegExp("\\b" + k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\b", "i");
+        if (re.test(lower)) hits++;
+      }
+    }
+    return hits;
+  }
+
+  function classify(item) {
+    // headline matches count 3× — the title is the strongest signal
+    let best = null, bestScore = 0;
+    for (const cat of CATEGORIES) {
+      const score = keywordHits(item.title, cat.keywords) * 3
+                  + keywordHits(item.description || "", cat.keywords);
+      if (score > bestScore) { bestScore = score; best = cat; }
+    }
+    return bestScore > 0 ? best : CAT_BY_KEY.informative;
+  }
+
+  // ---------- helpers ----------
+  // Google News titles look like "Headline text - Source Name"
+  function splitTitle(raw) {
+    const i = raw.lastIndexOf(" - ");
+    if (i > 10 && raw.length - i < 60) return [raw.slice(0, i), raw.slice(i + 3)];
+    return [raw, "Google News"];
+  }
+
+  function timeAgo(pubDate) {
+    // rss2json returns "YYYY-MM-DD HH:mm:ss" (UTC)
+    const t = new Date(pubDate.replace(" ", "T") + "Z");
+    if (isNaN(t)) return pubDate;
+    const mins = Math.max(0, Math.round((Date.now() - t) / 60000));
+    if (mins < 60)    return mins + " min ago";
+    if (mins < 1440)  return Math.round(mins / 60) + "h ago";
+    return Math.round(mins / 1440) + "d ago";
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  // ---------- filters ----------
+  function setCat(key) { activeCat = key; render(lastResponse); }
+  function setQuery(q) { query = q.trim(); render(lastResponse); }
+
+  function applyFilters(items) {
+    return items.filter(it => {
+      if (activeCat !== "all" && it._cat.key !== activeCat) return false;
+      if (query && !it.title.toLowerCase().includes(query.toLowerCase())) return false;
+      return true;
+    });
+  }
+
+  // ---------- render ----------
+  function render(data) {
+    lastResponse = data;
+    const items = data.items || [];
+
+    // classify once per item (if not already classified)
+    for (const it of items) if (!it._cat) it._cat = classify(it);
+
+    // stats (whole region, unfiltered)
+    const sources = new Set(items.map(it => splitTitle(it.title)[1]));
+    document.getElementById("stat-count").textContent   = items.length;
+    document.getElementById("stat-sources").textContent = sources.size;
+    document.getElementById("stat-latest").textContent  = items.length ? timeAgo(items[0].pubDate) : "–";
+    document.getElementById("stat-time").textContent    = new Date().toLocaleTimeString();
+    document.getElementById("json-total").textContent   = items.length;
+
+    renderCatChips(items);
+    renderChart(items);
+    renderGrid(items);
+    renderJson(items, data);
+  }
+
+  function renderCatChips(items) {
+    const counts = { all: items.length, informative: 0 };
+    for (const c of CATEGORIES) counts[c.key] = 0;
+    for (const it of items) counts[it._cat.key]++;
+    const chip = (key) => {
+      const c = CAT_BY_KEY[key];
+      return `<button class="cat-chip ${activeCat === key ? "active" : ""}" onclick="setCat('${key}')">
+                ${c.icon} ${c.label} <span class="count">${counts[key]}</span>
+              </button>`;
+    };
+    document.getElementById("cat-chips").innerHTML =
+      chip("all") + chip("informative") + CATEGORIES.map(c => chip(c.key)).join("");
+  }
+
+  function renderChart(items) {
+    const counts = { informative: 0 };
+    for (const c of CATEGORIES) counts[c.key] = 0;
+    for (const it of items) counts[it._cat.key]++;
+    const max = Math.max(1, ...Object.values(counts));
+    const rows = [{ key: "informative", ...CAT_BY_KEY.informative }, ...CATEGORIES]
+      .map(c => {
+        const n = counts[c.key];
+        const pct = Math.round((n / Math.max(1, items.length)) * 100);
+        return `<div class="bar-row">
+                  <span class="lbl">${c.icon} ${c.label}</span>
+                  <span class="track"><span class="fill" style="width:${(n / max) * 100}%"></span></span>
+                  <span class="val" title="${pct}%">${n}</span>
+                </div>`;
+      }).join("");
+    document.getElementById("chart-rows").innerHTML = rows;
+  }
+
+  function renderGrid(items) {
+    const grid = document.getElementById("news-grid");
+    const shown = applyFilters(items);
+    if (!shown.length) {
+      grid.innerHTML = `<div class="no-results">No articles match the current category / search filter.</div>`;
+    } else {
+      grid.innerHTML = shown.slice(0, 30).map((it, i) => {
+        const [headline, source] = splitTitle(it.title);
+        const cat = it._cat;
+        return `
+          <div class="card" style="animation-delay:${Math.min(i * 40, 500)}ms">
+            <div class="card-top">
+              <span class="meta-left">
+                <span class="source-chip">${escapeHtml(source)}</span>
+                <span class="cat-badge" title="Auto-category">${cat.icon} ${cat.label.split(" / ")[0]}</span>
+              </span>
+              <span class="rank">#${String(i + 1).padStart(2, "0")}</span>
+            </div>
+            <a class="headline" href="${it.link}" target="_blank" rel="noopener">${escapeHtml(headline)}</a>
+            <div class="card-bottom">
+              <span class="time">🕒 ${timeAgo(it.pubDate)}</span>
+              <a class="read-link" href="${it.link}" target="_blank" rel="noopener">Read →</a>
+            </div>
+          </div>`;
+      }).join("");
+    }
+    const filteredNote = (activeCat !== "all" || query)
+      ? ` — showing ${shown.length} of ${items.length} (filter: ${query ? `“${query}”` : ""}${query && activeCat !== "all" ? " + " : ""}${activeCat !== "all" ? CAT_BY_KEY[activeCat].label : ""})`
+      : "";
+    const status = document.getElementById("status-msg");
+    status.textContent = (status.dataset.base || "✅ OK.") + filteredNote;
+  }
+
+  function renderJson(items, data) {
+    // raw JSON viewer: first 3 items, pretty-printed
+    const trimmed = { ...data, items: items.slice(0, 3).map(({ _cat, ...rest }) => ({ ...rest, category_ai: _cat.label })) };
+    document.getElementById("json-view").textContent =
+      JSON.stringify(trimmed, null, 2).slice(0, 20000) +
+      (items.length > 3 ? `\n\n… ${items.length - 3} more items in the full response …` : "");
+  }
+
+  function showError(msg) {
+    document.getElementById("news-grid").innerHTML =
+      `<div class="error-box" style="grid-column:1/-1">
+         <p style="font-size:15px;font-weight:600;margin-bottom:8px;color:var(--text)">⚠️ ${msg}</p>
+         <p>The free tiers throttle requests per IP address — wait a few seconds and press “↻ Refresh news”.
+            The page retries 4 providers automatically and keeps a cached copy of every region it has loaded.</p>
+       </div>`;
+  }
+
+  // ---------- load ----------
+  let loadToken = 0;   // only the most recent load may render (guards against fast region switching)
+  async function loadNews() {
+    const token = ++loadToken;
+    const status = document.getElementById("status-msg");
+    const grid = document.getElementById("news-grid");
+    const r = REGIONS[region];
+    grid.innerHTML = `<div class="loading" style="grid-column:1/-1"><div class="spinner"></div>Calling the free news API (feed bundle: 5 feeds × ${PROVIDERS.length} providers)…</div>`;
+    status.dataset.base = `Fetching ${r.name} news… (5-feed bundle)`;
+    status.textContent = status.dataset.base;
+
+    try {
+      const merged = await fetchMergedRegion(region);
+      if (token !== loadToken) return;   // a newer region switch superseded this request
+      cache[region] = merged.data;
+      storeRegion(region, merged.data);
+      activeCat = "all"; query = "";
+      document.getElementById("search-input").value = "";
+      render(merged.data);
+      status.dataset.base = `✅ OK — ${merged.data.items.length} ${r.name} articles merged from ${merged.feedsOk}/${merged.feedsTotal} feeds (via ${merged.providersUsed}).`;
+      status.textContent = status.dataset.base;
+      return;
+    } catch (e) {
+      console.warn("[loadNews]", e);
+      if (token !== loadToken) return;
+    }
+
+    // every provider failed → show the last successful fetch for this region
+    const stored = loadStoredRegion(region);
+    if (stored) {
+      cache[region] = stored.data;
+      render(stored.data);
+      const when = new Date(stored.t).toLocaleTimeString();
+      status.dataset.base = `⚠️ API providers unreachable right now — showing last cached ${r.name} articles from ${when}. Press ↻ Refresh to retry.`;
+      status.textContent = status.dataset.base;
+      return;
+    }
+    showError(`Could not reach any news provider (${PROVIDERS.length} providers × 5 feeds were tried)`);
+    status.dataset.base = "❌ Request failed — press ↻ Refresh to retry.";
+    status.textContent = status.dataset.base;
+  }
+
+  function downloadJson() {
+    if (!lastResponse) { alert("Load the news first."); return; }
+    const blob = new Blob([JSON.stringify(lastResponse, null, 2)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `${region}-news-api-response.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  syncChrome();
+  // stale-while-revalidate: show the last cached copy instantly, then refresh from the API
+  (async () => {
+    const stored = loadStoredRegion(region);
+    if (stored) {
+      cache[region] = stored.data;
+      render(stored.data);
+      const st = document.getElementById("status-msg");
+      st.dataset.base = `📦 Showing cached articles from ${new Date(stored.t).toLocaleTimeString()} — refreshing…`;
+      st.textContent = st.dataset.base;
+    }
+    loadNews();
+  })();
+</script>
+</body>
+</html>

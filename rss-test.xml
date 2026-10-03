@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Local Test Feed - Google News</title>
+    <link>https://news.google.com</link>
+    <item>
+      <title>Test headline one about football and the league final - Test Source</title>
+      <link>https://example.com/1</link>
+      <pubDate>Tue, 30 Sep 2026 08:15:00 GMT</pubDate>
+      <guid>test-1</guid>
+      <description>related story</description>
+    </item>
+    <item>
+      <title>Bank announces new funding for local startups - Test Biz</title>
+      <link>https://example.com/2</link>
+      <pubDate>Tue, 30 Sep 2026 07:00:00 GMT</pubDate>
+      <guid>test-2</guid>
+      <description>related story</description>
+    </item>
+  </channel>
+</rss>

@@ -44,9 +44,3 @@ cd sg-news
 python -m http.server 8931
 # open http://localhost:8931
 ```
-
-## 📸 For the WeChat group share
-
-1. Open the page, wait for news cards to load (status bar shows "✅ OK — N articles received from API").
-2. Click "👁 View raw JSON response" so the JSON is also visible, then screenshot.
-3. Send the screenshot (optionally with `sample-response.json`) to the group.
